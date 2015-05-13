@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<transitionSet
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:transitionOrdering="sequential">
+
+    <fade
+        android:fadingMode="fade_out"
+        android:duration="5000">
+        <targets>
+            <target android:targetId="@+id/fadeOutText"></target>
+        </targets>
+    </fade>
+
+    <changeBounds/>
+
+    <fade
+        android:fadingMode="fade_in"
+        android:duration="5000">
+        <targets>
+            <target android:targetId="@+id/teksGaib"></target>
+        </targets>
+    </fade>
+
+    <fade
+        android:fadingMode="fade_in"
+        android:duration="6000">
+        <targets>
+            <target android:targetId="@+id/teksGaib2"></target>
+        </targets>
+    </fade>
+
+
+</transitionSet>
