@@ -20,9 +20,10 @@ public class BallBouncer extends View
     private static final int DEFAULT_HEIGHT = 15;
     private double currentXVelocity;
     private double currentYVelocity;
-    private int currentXPosition;
-    private int currentYPosition;
+    private double currentXPosition;
+    private double currentYPosition;
     private Paint paint = new Paint();
+    private boolean canContinue;
 
     public BallBouncer(Context context, AttributeSet attrs, int defStyle)
     {
@@ -44,10 +45,11 @@ public class BallBouncer extends View
 
     private void setupBall()
     {
-        this.currentXPosition = 0;
-        this.currentYPosition = 0;
+        this.currentXPosition = DEFAULT_WIDTH;
+        this.currentYPosition = DEFAULT_HEIGHT;
         this.currentXVelocity = INITIAL_X_VELOCITY;
         this.currentYVelocity = INITIAL_Y_VELOCITY;
+        canContinue = true;
 
         setOnClickListener(new OnClickListener()
         {
@@ -66,23 +68,19 @@ public class BallBouncer extends View
             @Override
             public void run()
             {
-                int counter = 300;
-                while(counter > 0)
+            while(canContinue)
+            {
+                moveObject();
+                postInvalidate();
+                try
                 {
-                    moveObject();
-                    postInvalidate();
-
-                    try
-                    {
-                        Thread.sleep(10);
-                    }
-                    catch(Exception ex)
-                    {
-
-                    }
-
-                    counter --;
+                    Thread.sleep(10);
                 }
+                catch(Exception ex)
+                {
+
+                }
+            }
             }
         }).start();
     }
@@ -90,7 +88,7 @@ public class BallBouncer extends View
     @Override
     protected void onDraw(Canvas canvas)
     {
-        canvas.drawCircle(currentXPosition,currentYPosition,DEFAULT_HEIGHT,paint);
+        canvas.drawCircle((int)currentXPosition,(int)currentYPosition,DEFAULT_HEIGHT,paint);
     }
 
     @Override
@@ -103,40 +101,68 @@ public class BallBouncer extends View
     {
         double v2 = (ACCELERATION * 1) + currentYVelocity;
         currentYVelocity = v2;
-
+        double oldXPosition = currentXPosition;
         this.currentXPosition += currentXVelocity;
         this.currentYPosition += currentYVelocity;
 
-        int maxY = getHeight() - (DEFAULT_HEIGHT/2);
-        int maxX = getWidth() - (DEFAULT_WIDTH/2);
-        int minX = 0 + DEFAULT_WIDTH/2;
+        int maxY = getHeight() - (DEFAULT_HEIGHT);
+        int maxX = getWidth() - (DEFAULT_WIDTH);
+        int minX = 0;
 
         if(currentYPosition > maxY)
         {
-            currentYPosition = maxY;
-            currentYVelocity = (-RESITUTION_COEFISION * currentYVelocity);
+            setupYPositionAndVelocity(maxY, (-RESITUTION_COEFISION * currentYVelocity));
         }
         else if(currentYPosition < 0)
         {
-            currentYPosition = 0;
-            currentYVelocity = (-RESITUTION_COEFISION * currentYVelocity);
+            setupYPositionAndVelocity(0, (-RESITUTION_COEFISION * currentYVelocity));
         }
 
         if(currentXPosition > maxX)
         {
-            currentXPosition = maxX;
-            currentXVelocity = (-RESITUTION_COEFISION * currentXVelocity);
+            setupXPositionAndVelocity(maxX, (-RESITUTION_COEFISION * currentXVelocity));
         }
         else if(currentXPosition < minX)
         {
-            currentXPosition = minX;
-            currentXVelocity = (-RESITUTION_COEFISION * currentXVelocity);
+            setupXPositionAndVelocity(minX, (-RESITUTION_COEFISION * currentXVelocity));
         }
 
-        if(currentYPosition == maxY)
+        if(isBallRollingOnTheFloor(maxY))
         {
-            currentXPosition = (int)FRICTION_COEFISION * currentXPosition;
+            currentXVelocity = FRICTION_COEFISION * currentXVelocity;
         }
+
+        canContinue = canAnimationContinue(oldXPosition,currentXPosition);
+    }
+
+    private void setupYPositionAndVelocity(double newYPosition, double newYVelocity)
+    {
+        currentYPosition = newYPosition;
+        currentYVelocity = newYVelocity;
+    }
+
+    private void setupXPositionAndVelocity(double newXPosition, double newXVelocity)
+    {
+        currentXPosition = newXPosition;
+        currentXVelocity = newXVelocity;
+    }
+
+    private boolean isBallRollingOnTheFloor(int floorYPosition)
+    {
+        if(currentYPosition == floorYPosition)
+        {
+            return true;
+        }
+        return  false;
+    }
+
+    private boolean canAnimationContinue(double oldObjectXPosition, double currentObjectXPosition)
+    {
+        if(oldObjectXPosition == currentObjectXPosition)
+        {
+            return false;
+        }
+        return true;
     }
 
 }
