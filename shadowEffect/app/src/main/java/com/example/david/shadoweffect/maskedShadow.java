@@ -11,11 +11,8 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 
 /**
  * Created by david on 5/19/15.
@@ -25,26 +22,45 @@ public class maskedShadow extends ImageView
     private Bitmap mainImage = null;
     private Bitmap imageShadow = null;
     private int dx,dy;
+    private Paint paint;
 
     public maskedShadow(Context context, AttributeSet attrs, int defStyle)
     {
         super(context, attrs, defStyle);
-        startAnimation();
+        initialize();
+        runAnimationSample();
     }
 
     public maskedShadow(Context context, AttributeSet attrs)
     {
         super(context, attrs);
-        startAnimation();
+        initialize();
+        runAnimationSample();
     }
 
     public maskedShadow(Context context)
     {
         super(context);
-        startAnimation();
+        initialize();
+        runAnimationSample();
     }
 
-    private void startAnimation()
+    private void initialize()
+    {
+        paint = new Paint();
+
+        if(mainImage == null)
+        {
+            mainImage = ((BitmapDrawable)getDrawable()).getBitmap();
+        }
+
+        if(imageShadow == null)
+        {
+            imageShadow = createShadow(mainImage, mainImage.getHeight(), mainImage.getWidth(), Color.GRAY, 3);
+        }
+    }
+
+    private void runAnimationSample()
     {
         new Thread(new Runnable() {
             @Override
@@ -61,7 +77,7 @@ public class maskedShadow extends ImageView
 
                     try
                     {
-                        Thread.sleep(100);
+                        Thread.sleep(10);
                     }
                     catch(Exception ex)
                     {
@@ -72,27 +88,15 @@ public class maskedShadow extends ImageView
         }).start();
     }
 
+
     @Override
     protected void onDraw(Canvas canvas)
     {
-        Paint paint = new Paint();
-
-        if(mainImage == null)
-        {
-            mainImage = ((BitmapDrawable)getDrawable()).getBitmap();
-        }
-
-        if(imageShadow == null)
-        {
-            imageShadow = getShadow(mainImage,mainImage.getHeight(), mainImage.getWidth(), Color.GRAY, 3);
-        }
-
-
         canvas.drawBitmap(imageShadow, canvas.getWidth()/2-imageShadow.getWidth()/2+dx, canvas.getHeight()/2-imageShadow.getHeight()/2+dy, paint);
-        //canvas.drawBitmap(mainImage, canvas.getWidth()/2-mainImage.getWidth()/2, canvas.getHeight()/2-mainImage.getHeight()/2, paint);
+        canvas.drawBitmap(mainImage, canvas.getWidth()/2-mainImage.getWidth()/2, canvas.getHeight()/2-mainImage.getHeight()/2, paint);
     };
 
-    public Bitmap getShadow(final Bitmap bm, final int dstHeight, final int dstWidth, int color, int size) {
+    public Bitmap createShadow(final Bitmap bm, final int dstHeight, final int dstWidth, int color, int size) {
         final Bitmap mask = Bitmap.createBitmap(dstWidth, dstHeight, Bitmap.Config.ALPHA_8);
 
         final Matrix scaleToFit = new Matrix();
@@ -100,11 +104,9 @@ public class maskedShadow extends ImageView
         final RectF dst = new RectF(0, 0, dstWidth, dstHeight);
         scaleToFit.setRectToRect(src, dst, Matrix.ScaleToFit.CENTER);
 
-        final Matrix dropShadow = new Matrix(scaleToFit);
-
         final Canvas maskCanvas = new Canvas(mask);
         final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        //maskCanvas.drawBitmap(bm, 0, 0, paint);
+
         paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_OUT));
         maskCanvas.drawBitmap(bm, 0, 0, paint);
 
@@ -118,7 +120,7 @@ public class maskedShadow extends ImageView
         final Bitmap ret = Bitmap.createBitmap(dstWidth, dstHeight, Bitmap.Config.ARGB_8888);
         final Canvas retCanvas = new Canvas(ret);
 
-        //retCanvas.drawCircle(0,0,50,paint);
+
         retCanvas.drawBitmap(mask, 0,  0, paint);
 
         mask.recycle();
