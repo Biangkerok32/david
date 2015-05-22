@@ -15,7 +15,6 @@ public class MainActivity extends Activity implements SensorEventListener {
     private SensorManager senSensorManager;
     private Sensor senAccelerometer;
     private TextView textView;
-    private float last_x, last_y, last_z;
     private CustomView customView;
 
     @Override
@@ -29,10 +28,6 @@ public class MainActivity extends Activity implements SensorEventListener {
         senSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         senSensorManager.registerListener(this, senAccelerometer , SensorManager.SENSOR_DELAY_NORMAL);
-
-        last_x = 0;
-        last_y = 0;
-        last_z = 0;
     }
 
     @Override
@@ -45,7 +40,7 @@ public class MainActivity extends Activity implements SensorEventListener {
     @Override
     protected void onResume() {
         super.onResume();
-        senSensorManager.registerListener(this, senAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        senSensorManager.registerListener(this, senAccelerometer, SensorManager.SENSOR_DELAY_UI);
     }
 
     @Override
@@ -62,15 +57,12 @@ public class MainActivity extends Activity implements SensorEventListener {
             textView.setText("X : " + x  + "\nY : " + y);
             try
             {
-                customView.updateCircleList(y, last_y, x, last_x);
+                customView.updateCircleList(y, x);
             }
             catch (Exception ex)
             {
 
             }
-
-            last_y = y;
-            last_x = x;
         }
     }
 
